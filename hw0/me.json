@@ -1,10 +1,11 @@
 {
   "name": {
-    "first": "John",
-    "last": "Doe"
+    "first": "Daniel",
+    "last": "Lukas"
   },
   "fromWisconsin": false,
   "numCredits": 6.0,
-  "major": "CS",
-  "interests": ["Math", "Programming", "Transactions"]
+  "major": ["Computer Science", "Artificial Intelligence", "Blockchain"],
+  "intrests": ["Coding", "Gaming", "Reading"],
+  "role": ["Coder", "Trader"]
 }
