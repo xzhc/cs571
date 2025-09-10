@@ -5,68 +5,71 @@
 //  https://cs571api.cs.wisc.edu/rest/s25/ice/pasta
 //  https://cs571api.cs.wisc.edu/rest/s25/ice/pizza
 let recipe;
-let baseAmounts = [];
+let baseAmounts;
 let reviewNum = 0;
 
 function updateRecipe() {
   const selectedRecipe = document.getElementById("recipe-selector").value;
+  //console.log(selectedRecipe);
   fetch("https://cs571.org/rest/s25/ice/" + selectedRecipe, {
     headers: {
-      //"X-CS571-ID": CS571.getBadgerId(),
       "X-CS571-ID": CS571.getBadgerId(),
     },
   })
-    .then((res) => {
-      //console.log(res.status);
-      return res.json();
-    })
+    .then((res) => res.json())
     .then((data) => {
-      //console.log("I have recieved some data!");
       recipe = data;
       console.log(data);
 
-      document.getElementById("recipe-img").src = data.img.location;
-      document.getElementById("recipe-img").alt = data.img.description;
-      document.getElementById("recipe-name").innerText = data.name;
-      document.getElementById("recipe-author").innerText = "by " + data.author;
+      const imageHTML = document.getElementById("recipe-img");
+      imageHTML.src = recipe.img.location;
+      imageHTML.alt = recipe.img.description;
 
-      document.getElementById("ingredients-body").innerHTML = "";
+      const nameHTML = document.getElementById("recipe-name");
+      nameHTML.innerText = recipe.name;
+
+      const authorHTML = document.getElementById("recipe-author");
+      authorHTML.innerText = "by " + recipe.author;
+
+      const ingredientsBodyHTML = document.getElementById("ingredients-body");
+      ingredientsBodyHTML.innerHTML = "";
       baseAmounts = [];
-      let ingreNames = Object.keys(data.ingredients);
+      const ingreNames = Object.keys(recipe.ingredients);
       for (let ingreName of ingreNames) {
-        let ingr = data.ingredients[ingreName];
+        const ingre = recipe.ingredients[ingreName];
+        const trHTML = document.createElement("tr");
+        const tdAmountHTML = document.createElement("td");
+        const tdUnitHTML = document.createElement("td");
+        const tdNameHTML = document.createElement("td");
 
-        const ingrRow = document.createElement("tr");
-        const ingrAmount = document.createElement("td");
-        const ingrUnit = document.createElement("td");
-        const ingrName = document.createElement("td");
+        baseAmounts.push(ingre.amount);
 
-        baseAmounts.push(ingr.amount);
-
-        ingrAmount.innerText = ingr.amount;
-        if (ingr.unit) {
-          ingrUnit.innerText = ingr.unit;
+        tdAmountHTML.innerText = ingre.amount;
+        if (ingre.unit) {
+          tdUnitHTML.innerText = ingre.unit;
         }
-        if (ingr.misc) {
-          ingrName.innerText = ingreName + "(" + ingr.misc + ")";
+        if (ingre.misc) {
+          tdNameHTML.innerText = ingreName + "(" + ingre.misc + ")";
         } else {
-          ingrName.innerText = ingreName;
+          tdNameHTML.innerText = ingreName;
         }
 
-        ingrRow.appendChild(ingrAmount);
-        ingrRow.appendChild(ingrUnit);
-        ingrRow.appendChild(ingrName);
-        document.getElementById("ingredients-body").appendChild(ingrRow);
+        trHTML.appendChild(tdAmountHTML);
+        trHTML.appendChild(tdUnitHTML);
+        trHTML.appendChild(tdNameHTML);
+        ingredientsBodyHTML.appendChild(trHTML);
       }
 
-      document.getElementById("instructions").innerHTML = "";
-      for (let step of data.recipe) {
-        const node = document.createElement("li");
-        node.innerText = step;
-        document.getElementById("instructions").appendChild(node);
+      const instructionsHTML = document.getElementById("instructions");
+      instructionsHTML.innerHTML = "";
+      for (let step of recipe.recipe) {
+        const liHTML = document.createElement("li");
+        liHTML.innerText = step;
+        instructionsHTML.appendChild(liHTML);
       }
     });
 }
+
 //console.log(":)");
 
 // Gathers the original amounts of each ingredient.
