@@ -13,8 +13,7 @@ function updateYield() {
   const rows = document
     .getElementsByTagName("tbody")[0]
     .getElementsByTagName("tr");
-
-  for (let i = 0; i < rows.length; i++) {
+  for (let i = 0; i < BASE_AMNS.length; i++) {
     rows[i].getElementsByTagName("td")[0].innerText =
       BASE_AMNS[i] * parseInt(numServings);
   }
@@ -26,3 +25,5 @@ function displayReview() {
   alert(REVIEWS[reviewNum]);
   reviewNum = (reviewNum + 1) % REVIEWS.length;
 }
+
+//console.log("index.js is loaded!");
