@@ -1,8 +1,13 @@
 /* This is where your CSS goes! */
-table, th, td {
-    border: 1px solid;
+html {
+  margin: 1rem;
+}
+table,
+th,
+td {
+  border: 1px solid;
 }
 
 td {
-    padding: 4px;
+  padding: 4px;
 }
