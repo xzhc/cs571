@@ -1,22 +1,37 @@
-
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from "react";
+import BadgerLoginStatusContext from "../contexts/BadgerLoginStatusContext";
+import { useNavigate } from "react-router";
 
 export default function BadgerLogout() {
+  const { setLoginStatus, setUsername } = useContext(BadgerLoginStatusContext);
+  const navigate = useNavigate();
+  useEffect(() => {
+    fetch("https://cs571.org/rest/s25/hw6/logout", {
+      method: "POST",
+      headers: {
+        "X-CS571-ID": CS571.getBadgerId(),
+      },
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        // Maybe you need to do something here?
+        sessionStorage.removeItem("username");
+        sessionStorage.removeItem("loginStatus");
 
-    useEffect(() => {
-        fetch('https://cs571api.cs.wisc.edu/rest/s25/hw6/logout', {
-            method: 'POST',
-            headers: {
-                "X-CS571-ID": CS571.getBadgerId()
-            },
-            credentials: "include"
-        }).then(res => res.json()).then(json => {
-            // Maybe you need to do something here?
-        })
-    }, []);
+        setLoginStatus(false);
+        setUsername("");
 
-    return <>
-        <h1>Logout</h1>
-        <p>You have been successfully logged out.</p>
+        navigate("/");
+        alert("You have been logged out!");
+        console.log(data);
+      });
+  }, []);
+
+  return (
+    <>
+      <h1>Logout</h1>
+      <p>You have been successfully logged out.</p>
     </>
+  );
 }
