@@ -75,6 +75,8 @@ export default function LoginOrCreatePost(props) {
       } else {
         alert("Something went wrong! :/");
       }
+    })
+    })
     });
   }
 
