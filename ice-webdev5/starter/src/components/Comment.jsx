@@ -1,13 +1,19 @@
+import { memo, useMemo } from "react";
 import { Card } from "react-bootstrap";
 
-export default function Comment(props) {
+const Comment = memo(function Comment(props) {
+  console.log("I have rendered!");
 
-    console.log("I have rendered!")
+  const createdDt = useMemo(() => new Date(props.created), [props.created]);
 
-    const createdDt = new Date(props.created);
-
-    return <Card style={{margin: "0.5rem"}}>
-        <p>{props.comment}</p>
-        <p>Posted on {createdDt.toLocaleDateString()} at {createdDt.toLocaleTimeString()} by {props.author}</p>
+  return (
+    <Card style={{ margin: "0.5rem" }}>
+      <p>{props.comment}</p>
+      <p>
+        Posted on {createdDt.toLocaleDateString()} at{" "}
+        {createdDt.toLocaleTimeString()} by {props.author}
+      </p>
     </Card>
-}
+  );
+});
+export default Comment;

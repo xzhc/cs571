@@ -1,136 +1,120 @@
-import { useEffect, useState } from "react"
+import { useCallback, useMemo } from "react";
 import Comment from "./Comment";
 import { Button, Col, Container, Form, Row } from "react-bootstrap";
+import { useAuth } from "../hooks/useAuth";
+import { useComments } from "../hooks/useComments";
+import { useForm } from "../hooks/useForm";
 
-export default function CommentBoard(props) {
+export default function CommentBoard() {
+  //use custom hooks to manage Auth and Comments
+  const auth = useAuth();
+  const comments = useComments();
 
-    const [inputUsername, setInputUsername] = useState("");
-    const [inputPassword, setInputPassword] = useState("");
-    const [inputComment, setInputComment] = useState("");
+  //use custom hook to manage loginForm and commentForm
+  const loginForm = useForm({ username: "", password: "" });
+  const commentForm = useForm({ comment: "" });
 
-    // Note! You should use this in combination with sessionStorage.
-    // Otherwise, when the user refreshes the page, it will go away!
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Note! You should use this in combination with sessionStorage.
+  // Otherwise, when the user refreshes the page, it will go away!
 
-    const [comments, setComments] = useState([]);
+  // const refreshComments = useCallback(async () => {
+  //   await comments.fetchComments();
+  // }, [comments]);
 
-    function refreshComments() {
-        fetch("https://cs571api.cs.wisc.edu/rest/s25/ice/comments", {
-            headers: {
-                "X-CS571-ID": CS571.getBadgerId()
-            }
-        })
-        .then(res => res.json())
-        .then(comms => {
-            setComments(comms)
-        })
-    }
+  const handleLoginSubmit = useCallback(
+    async (e) => {
+      e?.preventDefault();
 
-    function handleLoginSubmit(e) {
-        e?.preventDefault();
+      await auth.login(loginForm.values.username, loginForm.values.password);
+    },
+    [auth, loginForm.values]
+  );
 
-        fetch("https://cs571api.cs.wisc.edu/rest/s25/ice/login", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "X-CS571-ID": CS571.getBadgerId(),
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                username: inputUsername,
-                password: inputPassword
-            })
-        })
-        .then(res => {
-            if (res.status === 200) {
-                setIsLoggedIn(true)
-            } else {
-                alert("Invalid username/password!")
-            }
-        })
-    }
+  const handleCommentSubmit = useCallback(
+    async (e) => {
+      e?.preventDefault();
+      const success = await comments.addComment(commentForm.values.comment);
+      if (success) {
+        commentForm.resetForm();
+      }
+    },
+    [comments, commentForm]
+  );
 
-    function handleCommentSubmit(e) {
-        e?.preventDefault();
+  const handleLogout = useCallback(async () => {
+    await auth.logout();
+  }, [auth]);
 
-        fetch("https://cs571api.cs.wisc.edu/rest/s25/ice/comments", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "X-CS571-ID": CS571.getBadgerId(),
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                comment: inputComment
-            })
-        })
-        .then(res => {
-            if (res.status === 200) {
-                refreshComments();
-            } else {
-                alert("Did you provide a comment?")
-            }
-        })
-    }
+  // useEffect(() => {
+  //   refreshComments();
+  // }, [refreshComments]);
 
-    function handleLogout() {
-        fetch("https://cs571api.cs.wisc.edu/rest/s25/ice/logout", {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "X-CS571-ID": CS571.getBadgerId()
-            }
-        }).then(res => {
-            if (res.status === 200) {
-                alert("You have been logged out!")
-                setIsLoggedIn(false);
-            } else {
-                alert("Something went wrong! :/")
-            }
-        })
-    }
+  const commentList = useMemo(
+    () => (
+      <Container fluid>
+        <Row>
+          {comments.comments.map((c) => (
+            <Col key={c.id} xs={12} lg={6} xl={4} xxl={3}>
+              <Comment {...c} />
+            </Col>
+          ))}
+        </Row>
+      </Container>
+    ),
+    [comments.comments]
+  );
 
-    useEffect(() => {
-        refreshComments();
-    }, [])
-
-    return <div>
-        <h1 style={{textAlign: "left"}}>Badger Comments</h1>
-        <hr/>
-        <Container fluid>
-            <Row>
-                <Col xs={12} md={6} lg={4} style={{marginBottom: "1rem"}}>
-                    {
-                        isLoggedIn ? <>
-                        <Button variant="danger" onClick={handleLogout}>Logout</Button>
-                        <Form onSubmit={handleCommentSubmit}>
-                            <Form.Label htmlFor="commentInput">Your Comment</Form.Label>
-                            <Form.Control id="commentInput" value={inputComment} onChange={(e) => setInputComment(e.target.value)}></Form.Control>
-                            <br/>
-                            <Button type="submit" onClick={handleCommentSubmit}>Post Comment</Button>
-                        </Form>
-                    </> : <Form onSubmit={handleLoginSubmit}>
-                        <Form.Label htmlFor="usernameInput">Username</Form.Label>
-                        <Form.Control id="usernameInput" value={inputUsername} onChange={(e) => setInputUsername(e.target.value)}></Form.Control>
-                        <Form.Label htmlFor="passwordInput">Password</Form.Label>
-                        <Form.Control id="passwordInput" type="password" value={inputPassword} onChange={(e) => setInputPassword(e.target.value)}></Form.Control>
-                        <br/>
-                        <Button type="submit" onClick={handleLoginSubmit}>Login</Button>
-                    </Form>
-                    }
-                </Col>
-                <Col xs={12} md={6} lg={8}>
-                    <Container fluid>
-                        <Row>
-                            {
-                                comments.map(c => <Col key={c.id} xs={12} lg={6} xl={4} xxl={3}>
-                                    <Comment {...c} />
-                                </Col>)
-                            }
-                        </Row>
-                    </Container>
-                </Col>
-            </Row>
-        </Container>
+  return (
+    <div>
+      <h1 style={{ textAlign: "left" }}>Badger Comments</h1>
+      <hr />
+      <Container fluid>
+        <Row>
+          <Col xs={12} md={6} lg={4} style={{ marginBottom: "1rem" }}>
+            {auth.isLoggedIn ? (
+              <>
+                <Button variant="danger" onClick={handleLogout}>
+                  Logout
+                </Button>
+                <Form onSubmit={handleCommentSubmit}>
+                  <Form.Label htmlFor="commentInput">Your Comment</Form.Label>
+                  <Form.Control
+                    id="commentInput"
+                    name="comment"
+                    value={commentForm.values.comment}
+                    onChange={commentForm.handleChange}
+                  ></Form.Control>
+                  <br />
+                  <Button type="submit">Post Comment</Button>
+                </Form>
+              </>
+            ) : (
+              <Form onSubmit={handleLoginSubmit}>
+                <Form.Label htmlFor="usernameInput">Username</Form.Label>
+                <Form.Control
+                  id="usernameInput"
+                  name="username"
+                  value={loginForm.values.username}
+                  onChange={loginForm.handleChange}
+                ></Form.Control>
+                <Form.Label htmlFor="passwordInput">Password</Form.Label>
+                <Form.Control
+                  id="passwordInput"
+                  name="password"
+                  type="password"
+                  value={loginForm.values.password}
+                  onChange={loginForm.handleChange}
+                ></Form.Control>
+                <br />
+                <Button type="submit">Login</Button>
+              </Form>
+            )}
+          </Col>
+          <Col xs={12} md={6} lg={8}>
+            {commentList}
+          </Col>
+        </Row>
+      </Container>
     </div>
+  );
 }
